@@ -664,7 +664,6 @@ export default {
             }
           },
           template(start, end, ev) {
-            console.log(ev);
             if (ev.$level === 1) {
               return (
                 gantt.getTask(gantt.getParent(ev.id)).text + ' ▸ ' + ev.text
