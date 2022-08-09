@@ -177,7 +177,6 @@
 <script>
 import { onMounted, getCurrentInstance } from 'vue';
 import { gantt } from 'dhtmlx-gantt';
-import '../../public/ganttData';
 export default {
   data() {
     return {
@@ -509,7 +508,7 @@ export default {
         : [];
       ins.data.ganttData = localStorage.getItem('ganttData')
         ? JSON.parse(localStorage.getItem('ganttData'))
-        : JSON.parse(window.ganttJson);
+        : (window.ganttJson ? JSON.parse(window.ganttJson) : {});
       const { locale, zoomConfig } = ins.data;
       // 設定gantt語言
       gantt.i18n.setLocale(locale);
@@ -868,6 +867,8 @@ export default {
       if (Object.keys(ins.data.ganttData).length) {
         gantt.parse(ins.data.ganttData);
       }
+      // 初始化時讓今天在中間
+      gantt.showDate(new Date(new Date().getTime() - 86400000 * 10))
     });
   }
 };
