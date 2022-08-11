@@ -153,6 +153,7 @@
               <button @click="importJob(item)" class="import-todo">
                 匯入工作
               </button>
+              <button @click="deleteJob(item)" class="delete-todo">移除</button>
             </li>
             <h3 style="text-align: center" v-show="!todoList.length">
               尚無事項
@@ -491,6 +492,23 @@ export default {
       });
       localStorage.setItem('todoList', JSON.stringify(this.todoList));
     },
+    // todo移除事件
+    deleteJob(todo) {
+      gantt.confirm({
+        text: `確認刪除 ${todo.text}?`,
+        ok: '確認',
+        cancel: '取消',
+        callback: (result) => {
+          if (result) {
+            gantt.message(`已成功刪除 ${todo.text}`);
+            this.todoList = this.todoList.filter((item) => {
+              return item.id != todo.id;
+            });
+            localStorage.setItem('todoList', JSON.stringify(this.todoList));
+          }
+        }
+      });
+    },
     //localStorage版本的資料寫入
     updateData() {
       const newDate = gantt.serialize();
@@ -508,7 +526,9 @@ export default {
         : [];
       ins.data.ganttData = localStorage.getItem('ganttData')
         ? JSON.parse(localStorage.getItem('ganttData'))
-        : (window.ganttJson ? JSON.parse(window.ganttJson) : {});
+        : window.ganttJson
+        ? JSON.parse(window.ganttJson)
+        : {};
       const { locale, zoomConfig } = ins.data;
       // 設定gantt語言
       gantt.i18n.setLocale(locale);
@@ -712,15 +732,17 @@ export default {
         const isNew = nowTask.$new;
         const isImport = nowTask.isImport;
         const level = nowTask.$level;
-        if (isNew && !isImport) {
-          nowTask.start_date = new Date();
-          nowTask.text = '新工作';
-          nowTask.open = true;
-        }
-        if ((!level || level == 1) && !isImport) {
-          nowTask.type = 'project';
-        } else {
-          nowTask.type = 'task';
+        if (isNew) {
+          if ((!level || level == 1) && !isImport) {
+            nowTask.type = 'project';
+          } else {
+            nowTask.type = 'task';
+          }
+          if (!isImport) {
+            nowTask.start_date = new Date();
+            nowTask.text = '新工作';
+            nowTask.open = true;
+          }
         }
         return true;
       });
@@ -867,7 +889,7 @@ export default {
         gantt.parse(ins.data.ganttData);
       }
       // 初始化時讓今天在中間
-      gantt.showDate(new Date(new Date().getTime() - 86400000 * 10))
+      gantt.showDate(new Date(new Date().getTime() - 86400000 * 10));
     });
   }
 };
@@ -1352,7 +1374,7 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   background: #e74c3c;
-  width: 100px;
+  width: 80px;
   text-align: center;
   color: #fff;
   padding: 5px;
@@ -1363,6 +1385,24 @@ export default {
 }
 .todoList li:hover .import-todo {
   right: 20px;
+}
+.todoList li .delete-todo {
+  position: absolute;
+  right: -100px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #e74c3c;
+  width: 50px;
+  text-align: center;
+  color: #fff;
+  padding: 5px;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.todoList li:hover .delete-todo {
+  right: 110px;
 }
 .wrapper .footer {
   display: flex;
